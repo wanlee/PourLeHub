@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Assistant Newsletter — CDC Habitat</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anek+Latin:wght@400;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+<link rel="stylesheet" href="https://cdn.cdc-habitat.fr/design-system/versions/latest/styles/design-system.css">
+
+<style>
+/* Jetons de design CDC Habitat — voir les outils de recadrage précédents pour
+   le détail des sources (design system officiel). */
+:root{
+  --cdc-red:#E30613;
+  --cdc-red-dark:#B91818;
+  --cdc-red-light:#FCE1D7;
+  --cdc-gray-dark:#4C4C4B;
+  --cdc-gray:#828485;
+  --cdc-gray-light:#D6D8D9;
+  --cdc-gray-extra-light:#ECECEC;
+  --cdc-white:#FFFFFF;
+  --cdc-font:'Anek Latin','Segoe UI',Arial,sans-serif;
+}
+
+html,body{background:var(--cdc-gray-extra-light);color:var(--cdc-gray-dark);font-family:var(--cdc-font);font-size:16px;line-height:24px;}
+h1,h2,h3,h4,legend{font-family:var(--cdc-font);color:var(--cdc-gray-dark);margin:0;}
+.cdc-title-1{font-weight:700;font-size:36px;line-height:45px;}
+.cdc-title-2{font-weight:400;font-size:22px;line-height:27.5px;}
+.cdc-title-3{font-weight:700;font-size:14px;line-height:17.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--cdc-gray);}
+.helper-text{font-size:14px;line-height:21px;color:var(--cdc-gray);}
+.cdc-eyebrow{text-transform:uppercase;letter-spacing:.08em;font-size:11px;line-height:16.5px;font-weight:700;color:var(--cdc-red);}
+
+.container{padding-top:24px;padding-bottom:24px;}
+.cdc-header{background:var(--cdc-white);border-bottom:1px solid var(--cdc-gray-extra-light);}
+.cdc-header .container{display:flex;align-items:center;justify-content:space-between;min-height:88px;padding-top:0;padding-bottom:0;}
+.cdc-logo-placeholder{display:flex;align-items:center;gap:10px;font-weight:700;font-size:1.15rem;color:var(--cdc-red);}
+.cdc-logo-placeholder .mark{width:36px;height:36px;border-radius:6px;background:var(--cdc-red);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;}
+.cdc-logo-note{font-size:.7rem;color:var(--cdc-gray);font-weight:400;}
+
+.cdc-card{background:var(--cdc-white);border:1px solid var(--cdc-gray-extra-light);border-radius:12px;}
+.cdc-btn-primary{background:var(--cdc-red);border-color:var(--cdc-red);color:#fff;}
+.cdc-btn-primary:hover{background:var(--cdc-red-dark);border-color:var(--cdc-red-dark);color:#fff;}
+.cdc-btn-primary:disabled{opacity:.5;}
+.cdc-btn-add{background:var(--cdc-white);border:1px dashed var(--cdc-red);color:var(--cdc-red);}
+.cdc-btn-add:hover{background:var(--cdc-red-light);color:var(--cdc-red-dark);border-color:var(--cdc-red-dark);}
+.btn-outline-secondary{color:var(--cdc-gray-dark);border-color:var(--cdc-gray-light);}
+.btn-outline-secondary:hover{background:var(--cdc-gray-extra-light);color:var(--cdc-gray-dark);border-color:var(--cdc-gray-light);}
+
+.form-control:focus,.form-select:focus{border-color:var(--cdc-red);box-shadow:0 0 0 .2rem rgba(227,6,19,.15);}
+label.field-label{font-size:13px;font-weight:700;color:var(--cdc-gray-dark);margin-bottom:4px;display:block;}
+
+.block-card{border:1px solid var(--cdc-gray-extra-light);border-radius:10px;background:#fff;padding:16px;margin-bottom:14px;}
+.block-card.is-dragging{opacity:.4;}
+.block-card .block-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.block-type-tag{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--cdc-red);background:var(--cdc-red-light);border-radius:4px;padding:2px 8px;}
+.drag-handle{cursor:grab;color:var(--cdc-gray-light);font-size:18px;padding:0 6px;user-select:none;}
+.block-actions{display:flex;gap:4px;align-items:center;}
+.block-actions button{border:none;background:none;color:var(--cdc-gray);padding:2px 6px;font-size:14px;}
+.block-actions button:hover{color:var(--cdc-red);}
+
+.img-drop{border:2px dashed var(--cdc-gray-light);border-radius:8px;background:var(--cdc-gray-extra-light);text-align:center;padding:16px;cursor:pointer;color:var(--cdc-gray);font-size:14px;}
+.img-drop.is-dragover{border-color:var(--cdc-red);background:var(--cdc-red-light);}
+.img-thumb-wrap{position:relative;}
+.img-thumb-wrap img{width:100%;max-height:180px;object-fit:cover;border-radius:8px;display:block;}
+.img-thumb-wrap .recrop-btn{position:absolute;bottom:8px;right:8px;font-size:12px;}
+
+.crop-panel{background:#111;border-radius:8px;margin-top:10px;padding:10px;}
+.crop-panel .cropper-wrapper{max-height:360px;overflow:hidden;}
+.crop-panel img{display:block;max-width:100%;}
+
+.preview-frame-wrap{background:#DADFE3;border-radius:12px;padding:24px 8px;display:flex;justify-content:center;}
+.preview-frame-wrap iframe{width:620px;max-width:100%;height:720px;border:none;background:#fff;border-radius:6px;box-shadow:0 2px 10px rgba(0,0,0,.1);}
+
+#htmlOutput{font-family:monospace;font-size:12px;height:220px;}
+footer.cdc-footer{color:var(--cdc-gray);font-size:14px;}
+</style>
+</head>
+<body>
+
+<header class="cdc-header">
+  <div class="container">
+    <div class="cdc-logo-placeholder">
+      <span class="mark">CDC</span>
+      <span>CDC Habitat<div class="cdc-logo-note">Logo provisoire — voir commentaire CSS pour l'asset officiel</div></span>
+    </div>
+    <span class="cdc-eyebrow">Outils internes · Communication</span>
+  </div>
+</header>
+
+<main class="container">
+  <div class="grid-row grid-row--gutters">
+
+    <div class="col-12">
+      <p class="cdc-eyebrow mb-1">Assistant de mise en forme</p>
+      <h1 class="cdc-title-1 mb-1">Assistant Newsletter</h1>
+      <p class="helper-text mb-0">Composez votre newsletter bloc par bloc, recadrez vos visuels, puis copiez le code HTML prêt à coller dans Mailchimp, Brevo ou votre outil d'emailing.</p>
+    </div>
+
+    <!-- Réglages généraux -->
+    <div class="col-12">
+      <div class="cdc-card p-4">
+        <h2 class="cdc-title-3 mb-3">Réglages généraux</h2>
+        <div class="grid-row grid-row--gutters">
+          <div class="col-12 col-md-6">
+            <label class="field-label" for="metaSubject">Objet de l'email</label>
+            <input type="text" class="form-control mb-3" id="metaSubject" placeholder="Ex : Les actualités CDC Habitat de juillet">
+            <label class="field-label" for="metaPreheader">Texte d'aperçu (preheader)</label>
+            <input type="text" class="form-control" id="metaPreheader" placeholder="Ex : Découvrez les nouveautés du mois">
+            <p class="helper-text mt-1 mb-0">Ce texte s'affiche dans la liste des emails, juste après l'objet. Il est invisible dans le corps du message.</p>
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="field-label" for="metaLogoUrl">URL du logo (hébergé)</label>
+            <input type="text" class="form-control mb-3" id="metaLogoUrl" placeholder="https://.../logo-cdc-habitat.png">
+            <label class="field-label" for="metaFooterText">Mentions de pied de page</label>
+            <textarea class="form-control" id="metaFooterText" rows="2">CDC Habitat — Vous recevez cet email en tant que contact du groupe CDC Habitat.</textarea>
+            <p class="helper-text mt-1 mb-0">Les images doivent être hébergées en ligne (médiathèque, CDN…) : les emails n'affichent pas les images encodées localement.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ajout de blocs -->
+    <div class="col-12">
+      <h2 class="cdc-title-3 mb-2">Contenu de la newsletter</h2>
+      <div class="d-flex flex-wrap gap-2 mb-3">
+        <button class="btn cdc-btn-add" id="btnAddArticle">+ Ajouter un article</button>
+        <button class="btn cdc-btn-add" id="btnAddCta">+ Ajouter un bouton CTA</button>
+      </div>
+      <div id="blockList"></div>
+      <p class="helper-text" id="emptyHint">Aucun bloc pour l'instant — ajoutez un article ou un bouton pour commencer.</p>
+    </div>
+
+    <!-- Aperçu -->
+    <div class="col-12">
+      <h2 class="cdc-title-3 mb-2">Aperçu de l'email</h2>
+      <div class="preview-frame-wrap">
+        <iframe id="previewFrame" title="Aperçu de la newsletter"></iframe>
+      </div>
+    </div>
+
+    <!-- Export -->
+    <div class="col-12">
+      <div class="cdc-card p-4">
+        <h2 class="cdc-title-3 mb-2">Export HTML</h2>
+        <p class="helper-text">Copiez ce code et collez-le dans le bloc « code HTML personnalisé » de Mailchimp / Brevo.</p>
+        <textarea id="htmlOutput" class="form-control mb-2" readonly></textarea>
+        <div class="d-flex flex-wrap gap-2">
+          <button class="btn cdc-btn-primary" id="btnCopy">Copier le code HTML</button>
+          <button class="btn btn-outline-secondary" id="btnDownload">Télécharger le fichier .html</button>
+          <span class="helper-text align-self-center ms-2" id="copyStatus"></span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <footer class="cdc-footer mt-5 pt-3 border-top">
+    Outil interne — assistant de composition de newsletter · export HTML email
+  </footer>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+
+<script>
+(function(){
+  "use strict";
+
+  const IMG_W = 1072, IMG_H = 602; // export 2x retina, affiché à 536x301 dans l'email
+  const MAX_IMG_BYTES = 300 * 1024;
+
+  const state = {
+    meta: { subject:'', preheader:'', logoUrl:'', footerText:'CDC Habitat — Vous recevez cet email en tant que contact du groupe CDC Habitat.' },
+    blocks: [],
+    activeCropId: null,
+    cropper: null
+  };
+  let uid = 0;
+
+  const blockListEl = document.getElementById('blockList');
+  const emptyHint = document.getElementById('emptyHint');
+  const previewFrame = document.getElementById('previewFrame');
+  const htmlOutput = document.getElementById('htmlOutput');
+  const copyStatus = document.getElementById('copyStatus');
+
+  // ---- Meta fields -----------------------------------------------------------
+  const metaSubject = document.getElementById('metaSubject');
+  const metaPreheader = document.getElementById('metaPreheader');
+  const metaLogoUrl = document.getElementById('metaLogoUrl');
+  const metaFooterText = document.getElementById('metaFooterText');
+  [ [metaSubject,'subject'], [metaPreheader,'preheader'], [metaLogoUrl,'logoUrl'], [metaFooterText,'footerText'] ]
+    .forEach(([el,key]) => el.addEventListener('input', () => { state.meta[key] = el.value; updatePreview(); }));
+
+  // ---- Création de blocs -------------------------------------------------------
+  document.getElementById('btnAddArticle').addEventListener('click', () => {
+    state.blocks.push({ id: ++uid, type:'article', title:'', teaser:'', linkUrl:'', linkText:'Lire la suite', hostedImgUrl:'', img:null });
+    renderAll();
+  });
+  document.getElementById('btnAddCta').addEventListener('click', () => {
+    state.blocks.push({ id: ++uid, type:'cta', ctaText:'En savoir plus', ctaUrl:'', align:'center' });
+    renderAll();
+  });
+
+  function findBlock(id){ return state.blocks.find(b => b.id === id); }
+  function removeBlock(id){ state.blocks = state.blocks.filter(b => b.id !== id); renderAll(); }
+  function moveBlock(id, dir){
+    const idx = state.blocks.findIndex(b => b.id === id);
+    const swapIdx = idx + dir;
+    if (swapIdx < 0 || swapIdx >= state.blocks.length) return;
+    [state.blocks[idx], state.blocks[swapIdx]] = [state.blocks[swapIdx], state.blocks[idx]];
+    renderAll();
+  }
+
+  // ---- Rendu de la liste de blocs (structure) -----------------------------------
+  function renderAll(){
+    emptyHint.hidden = state.blocks.length > 0;
+    blockListEl.innerHTML = '';
+    state.blocks.forEach((block, idx) => {
+      const card = document.createElement('div');
+      card.className = 'block-card';
+      card.draggable = true;
+      card.dataset.id = block.id;
+
+      card.innerHTML = block.type === 'article' ? articleCardHtml(block) : ctaCardHtml(block);
+      blockListEl.appendChild(card);
+      wireBlockCard(card, block);
+    });
+    updatePreview();
+  }
+
+  function articleCardHtml(block){
+    return `
+      <div class="block-head">
+        <div><span class="drag-handle">⠿</span><span class="block-type-tag">Article</span></div>
+        <div class="block-actions">
+          <button type="button" data-act="up" title="Monter">↑</button>
+          <button type="button" data-act="down" title="Descendre">↓</button>
+          <button type="button" data-act="del" title="Supprimer">✕</button>
+        </div>
+      </div>
+      <div class="grid-row grid-row--gutters">
+        <div class="col-12 col-md-5">
+          <label class="field-label">Visuel (ratio 16:9)</label>
+          <div class="img-zone"></div>
+        </div>
+        <div class="col-12 col-md-7">
+          <label class="field-label">Titre</label>
+          <input type="text" class="form-control mb-2" data-field="title" value="${escAttr(block.title)}" placeholder="Titre de l'article">
+          <label class="field-label">Chapo</label>
+          <textarea class="form-control mb-2" data-field="teaser" rows="2" placeholder="Résumé en 1-2 phrases">${escHtml(block.teaser)}</textarea>
+          <label class="field-label">Lien « en savoir plus »</label>
+          <input type="text" class="form-control mb-2" data-field="linkUrl" value="${escAttr(block.linkUrl)}" placeholder="https://rwann... ou https://groupe-cdc-habitat.com/...">
+          <label class="field-label">Texte du bouton</label>
+          <input type="text" class="form-control" data-field="linkText" value="${escAttr(block.linkText)}">
+        </div>
+      </div>`;
+  }
+
+  function ctaCardHtml(block){
+    return `
+      <div class="block-head">
+        <div><span class="drag-handle">⠿</span><span class="block-type-tag">Bouton CTA</span></div>
+        <div class="block-actions">
+          <button type="button" data-act="up" title="Monter">↑</button>
+          <button type="button" data-act="down" title="Descendre">↓</button>
+          <button type="button" data-act="del" title="Supprimer">✕</button>
+        </div>
+      </div>
+      <div class="grid-row grid-row--gutters">
+        <div class="col-12 col-md-6">
+          <label class="field-label">Texte du bouton</label>
+          <input type="text" class="form-control mb-2" data-field="ctaText" value="${escAttr(block.ctaText)}">
+          <label class="field-label">Lien</label>
+          <input type="text" class="form-control" data-field="ctaUrl" value="${escAttr(block.ctaUrl)}" placeholder="https://...">
+        </div>
+        <div class="col-12 col-md-6">
+          <label class="field-label">Alignement</label>
+          <select class="form-select" data-field="align">
+            <option value="left" ${block.align==='left'?'selected':''}>Gauche</option>
+            <option value="center" ${block.align==='center'?'selected':''}>Centré</option>
+            <option value="right" ${block.align==='right'?'selected':''}>Droite</option>
+          </select>
+        </div>
+      </div>`;
+  }
+
+  function wireBlockCard(card, block){
+    card.querySelectorAll('[data-field]').forEach(el => {
+      el.addEventListener('input', () => { block[el.dataset.field] = el.value; updatePreview(); });
+      el.addEventListener('change', () => { block[el.dataset.field] = el.value; updatePreview(); });
+    });
+    card.querySelectorAll('[data-act]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const act = btn.dataset.act;
+        if (act === 'del') removeBlock(block.id);
+        else if (act === 'up') moveBlock(block.id, -1);
+        else if (act === 'down') moveBlock(block.id, 1);
+      });
+    });
+    if (block.type === 'article'){
+      renderImgZone(card.querySelector('.img-zone'), block);
+    }
+    // Drag & drop reorder
+    card.addEventListener('dragstart', () => card.classList.add('is-dragging'));
+    card.addEventListener('dragend', () => card.classList.remove('is-dragging'));
+    card.addEventListener('dragover', e => e.preventDefault());
+    card.addEventListener('drop', e => {
+      e.preventDefault();
+      const draggedEl = blockListEl.querySelector('.is-dragging');
+      if (!draggedEl || draggedEl === card) return;
+      const draggedId = parseInt(draggedEl.dataset.id,10);
+      const targetId = parseInt(card.dataset.id,10);
+      const from = state.blocks.findIndex(b => b.id === draggedId);
+      const to = state.blocks.findIndex(b => b.id === targetId);
+      const [moved] = state.blocks.splice(from,1);
+      state.blocks.splice(to,0,moved);
+      renderAll();
+    });
+  }
+
+  // ---- Zone image + recadrage --------------------------------------------------
+  function renderImgZone(container, block){
+    if (!block.img){
+      container.innerHTML = `
+        <div class="img-drop" data-role="drop">Glissez une image ici<br>ou cliquez pour parcourir
+          <input type="file" accept="image/png,image/jpeg,image/webp" hidden data-role="input">
+        </div>`;
+      const drop = container.querySelector('[data-role="drop"]');
+      const input = container.querySelector('[data-role="input"]');
+      drop.addEventListener('click', () => input.click());
+      input.addEventListener('change', e => { if (e.target.files[0]) loadImageForBlock(block, e.target.files[0]); });
+      ['dragenter','dragover'].forEach(evt => drop.addEventListener(evt, e => { e.preventDefault(); drop.classList.add('is-dragover'); }));
+      ['dragleave','drop'].forEach(evt => drop.addEventListener(evt, e => { e.preventDefault(); drop.classList.remove('is-dragover'); }));
+      drop.addEventListener('drop', e => { if (e.dataTransfer.files[0]) loadImageForBlock(block, e.dataTransfer.files[0]); });
+    } else {
+      container.innerHTML = `
+        <div class="img-thumb-wrap">
+          <img src="${block.img.previewUrl}" alt="Aperçu">
+          <button type="button" class="btn btn-sm btn-outline-secondary recrop-btn" data-role="recrop">Recadrer</button>
+        </div>
+        <label class="field-label mt-2">URL de l'image (après upload)</label>
+        <input type="text" class="form-control" data-field="hostedImgUrl" value="${escAttr(block.hostedImgUrl)}" placeholder="https://.../image-recadree.jpg">
+        <p class="helper-text mt-1 mb-0">Téléchargez l'image recadrée, uploadez-la sur votre médiathèque, puis collez son URL ici pour l'export final.</p>
+        <button type="button" class="btn btn-sm btn-outline-secondary mt-2" data-role="dlimg">Télécharger l'image recadrée</button>`;
+      container.querySelector('[data-role="recrop"]').addEventListener('click', () => openCropPanel(container, block));
+      container.querySelector('[data-field="hostedImgUrl"]').addEventListener('input', e => { block.hostedImgUrl = e.target.value; updatePreview(); });
+      container.querySelector('[data-role="dlimg"]').addEventListener('click', () => downloadBlockImage(block));
+    }
+  }
+
+  function loadImageForBlock(block, file){
+    const objectUrl = URL.createObjectURL(file);
+    const imgEl = new Image();
+    imgEl.onload = () => {
+      block.img = { file, objectUrl, imgEl, rect: null, previewUrl: objectUrl, exportBlob: null };
+      renderAll();
+      // Ouvre directement le panneau de recadrage pour la première mise en cadre
+      const card = blockListEl.querySelector(`[data-id="${block.id}"]`);
+      openCropPanel(card.querySelector('.img-zone'), block);
+    };
+    imgEl.src = objectUrl;
+  }
+
+  function defaultRect(imgEl, ratio){
+    const iw = imgEl.naturalWidth, ih = imgEl.naturalHeight;
+    const imgRatio = iw/ih;
+    let w, h;
+    if (imgRatio > ratio){ h = ih; w = h*ratio; } else { w = iw; h = w/ratio; }
+    return { x:(iw-w)/2, y:(ih-h)/2, width:w, height:h };
+  }
+
+  function openCropPanel(container, block){
+    closeCropPanel();
+    const panel = document.createElement('div');
+    panel.className = 'crop-panel';
+    panel.innerHTML = `
+      <div class="cropper-wrapper"><img id="cropImg-${block.id}" src="${block.img.objectUrl}"></div>
+      <div class="d-flex justify-content-between align-items-center mt-2">
+        <span class="helper-text" style="color:#ccc">Molette = zoom · poignées = redimensionner le cadre</span>
+        <div class="d-flex gap-2">
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-role="cancel">Annuler</button>
+          <button type="button" class="btn btn-sm cdc-btn-primary" data-role="validate">Valider le cadrage</button>
+        </div>
+      </div>`;
+    container.appendChild(panel);
+    const imgEl = panel.querySelector('img');
+    const ratio = IMG_W / IMG_H;
+    const init = () => {
+      state.cropper = new Cropper(imgEl, {
+        aspectRatio: ratio, viewMode: 1, dragMode: 'move', autoCropArea: 1,
+        zoomOnWheel: true, cropBoxResizable: true, cropBoxMovable: true, background: false, responsive: true,
+        ready(){ this.cropper.setData(block.img.rect || defaultRect(block.img.imgEl, ratio)); }
+      });
+    };
+    if (imgEl.complete) init(); else imgEl.onload = init;
+    state.activeCropId = block.id;
+
+    panel.querySelector('[data-role="cancel"]').addEventListener('click', closeCropPanel);
+    panel.querySelector('[data-role="validate"]').addEventListener('click', async () => {
+      const data = state.cropper.getData(true);
+      block.img.rect = { x:data.x, y:data.y, width:data.width, height:data.height };
+      await regenerateBlockImage(block);
+      closeCropPanel();
+      renderAll();
+    });
+  }
+
+  function closeCropPanel(){
+    if (state.cropper){ state.cropper.destroy(); state.cropper = null; }
+    document.querySelectorAll('.crop-panel').forEach(p => p.remove());
+    state.activeCropId = null;
+  }
+
+  function canvasToBlob(canvas, mime, quality){ return new Promise(resolve => canvas.toBlob(resolve, mime, quality)); }
+
+  async function regenerateBlockImage(block){
+    const rect = block.img.rect || defaultRect(block.img.imgEl, IMG_W/IMG_H);
+    const canvas = document.createElement('canvas');
+    canvas.width = IMG_W; canvas.height = IMG_H;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(block.img.imgEl, rect.x, rect.y, rect.width, rect.height, 0, 0, IMG_W, IMG_H);
+    let quality = 0.8;
+    let blob = await canvasToBlob(canvas, 'image/jpeg', quality);
+    while (blob.size > MAX_IMG_BYTES && quality > 0.3){ quality -= 0.1; blob = await canvasToBlob(canvas, 'image/jpeg', quality); }
+    if (block.img.previewUrl && block.img.previewUrl !== block.img.objectUrl) URL.revokeObjectURL(block.img.previewUrl);
+    block.img.exportBlob = blob;
+    block.img.previewUrl = URL.createObjectURL(blob);
+  }
+
+  function downloadBlockImage(block){
+    if (!block.img || !block.img.exportBlob) return;
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(block.img.exportBlob);
+    a.download = `article-${block.id}.jpg`;
+    document.body.appendChild(a); a.click(); a.remove();
+  }
+
+  // ---- Génération du HTML email --------------------------------------------------
+  function escHtml(str){ return (str||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function escAttr(str){ return escHtml(str); }
+
+  function articleBlockHtml(block){
+    const imgSrc = block.hostedImgUrl || block.img?.previewUrl || '';
+    const imgTag = imgSrc ? `<img src="${escAttr(imgSrc)}" width="536" alt="${escAttr(block.title)}" style="display:block;width:100%;max-width:536px;height:auto;border-radius:4px;margin-bottom:16px;">` : '';
+    return `
+    <tr><td style="padding:24px 32px;font-family:Arial,Helvetica,sans-serif;">
+      ${imgTag}
+      <h2 style="margin:0 0 8px;font-family:Arial,Helvetica,sans-serif;font-size:22px;line-height:28px;color:#4C4C4B;">${escHtml(block.title)}</h2>
+      <p style="margin:0 0 16px;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:24px;color:#4C4C4B;">${escHtml(block.teaser)}</p>
+      ${block.linkUrl ? `<a href="${escAttr(block.linkUrl)}" style="display:inline-block;background:#E30613;color:#FFFFFF;text-decoration:none;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:bold;padding:12px 24px;border-radius:4px;">${escHtml(block.linkText || 'Lire la suite')}</a>` : ''}
+    </td></tr>`;
+  }
+
+  function ctaBlockHtml(block){
+    const align = block.align === 'left' ? 'left' : (block.align === 'right' ? 'right' : 'center');
+    return `
+    <tr><td align="${align}" style="padding:24px 32px;font-family:Arial,Helvetica,sans-serif;">
+      ${block.ctaUrl ? `<a href="${escAttr(block.ctaUrl)}" style="display:inline-block;background:#E30613;color:#FFFFFF;text-decoration:none;font-family:Arial,Helvetica,sans-serif;font-size:16px;font-weight:bold;padding:14px 32px;border-radius:4px;">${escHtml(block.ctaText)}</a>` : ''}
+    </td></tr>`;
+  }
+
+  function generateEmailHtml(){
+    const m = state.meta;
+    const blocksHtml = state.blocks.map(b => b.type === 'article' ? articleBlockHtml(b) : ctaBlockHtml(b)).join('\n');
+    const logoTag = m.logoUrl ? `<img src="${escAttr(m.logoUrl)}" width="140" alt="CDC Habitat" style="display:block;">` : `<span style="font-family:Arial,Helvetica,sans-serif;font-weight:bold;color:#E30613;font-size:20px;">CDC Habitat</span>`;
+    return `<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${escHtml(m.subject)}</title>
+</head>
+<body style="margin:0;padding:0;background:#ECECEC;">
+  <span style="display:none;max-height:0;overflow:hidden;">${escHtml(m.preheader)}</span>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#ECECEC;">
+    <tr><td align="center" style="padding:24px 0;">
+      <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="background:#FFFFFF;max-width:600px;width:100%;">
+        <tr><td style="padding:24px 32px;border-bottom:1px solid #ECECEC;">${logoTag}</td></tr>
+${blocksHtml}
+        <tr><td style="padding:24px 32px;border-top:1px solid #ECECEC;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:18px;color:#828485;">
+          ${escHtml(m.footerText)}
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+  }
+
+  function updatePreview(){
+    const html = generateEmailHtml();
+    previewFrame.srcdoc = html;
+    htmlOutput.value = html;
+  }
+
+  document.getElementById('btnCopy').addEventListener('click', async () => {
+    const text = htmlOutput.value;
+    try {
+      await navigator.clipboard.writeText(text);
+      copyStatus.textContent = 'Code copié !';
+    } catch (e){
+      htmlOutput.select();
+      document.execCommand('copy');
+      copyStatus.textContent = 'Code copié !';
+    }
+    setTimeout(() => copyStatus.textContent = '', 2500);
+  });
+
+  document.getElementById('btnDownload').addEventListener('click', () => {
+    const blob = new Blob([htmlOutput.value], { type:'text/html' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'newsletter-cdc-habitat.html';
+    document.body.appendChild(a); a.click(); a.remove();
+  });
+
+  renderAll();
+})();
+</script>
+</body>
+</html>
