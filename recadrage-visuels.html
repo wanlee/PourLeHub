@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Outil de recadrage de visuels — CDC Habitat</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anek+Latin:wght@400;700&display=swap" rel="stylesheet">
+
+<!-- Bootstrap : uniquement pour les composants (boutons, champs, onglets) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css">
+<!-- Cropper.js : zoom molette + redimensionnement du cadre de sélection -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+<!-- Design system CDC Habitat officiel (grille 12 colonnes, container, resets) -->
+<link rel="stylesheet" href="https://cdn.cdc-habitat.fr/design-system/versions/latest/styles/design-system.css">
+
+<style>
+/* ==========================================================================
+   JETONS DE DESIGN — CDC HABITAT
+   --------------------------------------------------------------------------
+   Valeurs récupérées depuis designsystem.cdc-habitat.fr (pages Colors et
+   Typography). Seul le LOGO n'a pas pu être embarqué automatiquement : les
+   fichiers sources sont distribués en .zip avec des liens de téléchargement
+   signés et temporaires (page "Téléchargements"), donc non réutilisables
+   durablement dans ce fichier. Téléchargez "CDC Habitat - logo.zip" depuis
+   cette page et placez le SVG à côté de ce fichier sous le nom
+   "logo-cdc-habitat.svg" (voir le bloc <header> plus bas).
+   ========================================================================== */
+:root{
+  --cdc-red:#E30613;            /* Rouge Groupe — identité : aplats, CTA, icônes, pictos */
+  --cdc-red-dark:#B91818;       /* Rouge dark — hover / active / focus uniquement */
+  --cdc-red-light:#FCE1D7;      /* Rouge light — fonds d'exergue, actions (active/disabled) */
+  --cdc-info-bg:#E4F3FD;        /* Information */
+  --cdc-error-bg:#FCE1D7;       /* Error (terra extra light) */
+  --cdc-success-bg:#E7F1E2;     /* Success */
+  --cdc-warning-bg:#FFF2CD;     /* Warning */
+  --cdc-gray-dark:#4C4C4B;      /* texte courant */
+  --cdc-gray:#828485;           /* background */
+  --cdc-gray-light:#D6D8D9;     /* état disabled */
+  --cdc-gray-extra-light:#ECECEC; /* background / état disabled */
+  --cdc-white:#FFFFFF;
+  --cdc-font:'Anek Latin','Segoe UI',Arial,sans-serif;
+}
+
+html,body{background:var(--cdc-gray-extra-light);color:var(--cdc-gray-dark);font-family:var(--cdc-font);font-size:16px;line-height:24px;} /* text-medium */
+
+/* Échelle typographique officielle (Anek Latin) */
+h1,h2,h3,h4,legend{font-family:var(--cdc-font);color:var(--cdc-gray-dark);margin:0;}
+/* Les titres ne doivent pas être colorés : uniquement gris/blanc, ou blanc/rouge sur un aplat rouge. */
+.cdc-title-1{font-weight:700;font-size:36px;line-height:45px;} /* title-2 */
+.cdc-title-2{font-weight:400;font-size:22px;line-height:27.5px;} /* title-4 */
+.cdc-title-3{font-weight:400;font-size:14px;line-height:17.5px;} /* title-6 */
+.helper-text{font-size:14px;line-height:21px;color:var(--cdc-gray);} /* text-small */
+.cdc-eyebrow{text-transform:uppercase;letter-spacing:.08em;font-size:11px;line-height:16.5px;font-weight:700;color:var(--cdc-red);} /* text-extra-small, rouge = texte en exergue */
+
+/* Conteneur : la classe .container officielle (design-system.css) applique déjà
+   max-width 1140px au point de rupture xl, avec marges latérales. On force ici
+   uniquement le confort de lecture au-delà. */
+.container{padding-top:24px;padding-bottom:24px;}
+
+.cdc-header{background:var(--cdc-white);border-bottom:1px solid var(--cdc-gray-extra-light);}
+.cdc-header .container{display:flex;align-items:center;justify-content:space-between;min-height:88px;padding-top:0;padding-bottom:0;}
+
+/* Logo — À REMPLACER : téléchargez "CDC Habitat - logo.zip" depuis la page
+   Téléchargements du design system et remplacez ce bloc par :
+   <img src="logo-cdc-habitat.svg" alt="CDC Habitat" height="40"> */
+.cdc-logo-placeholder{display:flex;align-items:center;gap:10px;font-weight:700;font-size:1.15rem;color:var(--cdc-red);}
+.cdc-logo-placeholder .mark{width:36px;height:36px;border-radius:6px;background:var(--cdc-red);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;}
+.cdc-logo-note{font-size:.7rem;color:var(--cdc-gray);font-weight:400;}
+
+.cdc-card{background:var(--cdc-white);border:1px solid var(--cdc-gray-extra-light);border-radius:12px;}
+
+.cdc-btn-primary{background:var(--cdc-red);border-color:var(--cdc-red);color:#fff;}
+.cdc-btn-primary:hover{background:var(--cdc-red-dark);border-color:var(--cdc-red-dark);color:#fff;}
+.cdc-btn-primary:disabled{opacity:.5;}
+.btn-outline-secondary{color:var(--cdc-gray-dark);border-color:var(--cdc-gray-light);}
+.btn-outline-secondary:hover{background:var(--cdc-gray-extra-light);color:var(--cdc-gray-dark);border-color:var(--cdc-gray-light);}
+
+.form-check-input:checked{background-color:var(--cdc-red);border-color:var(--cdc-red);}
+.form-check-input:focus{border-color:var(--cdc-red);box-shadow:0 0 0 .25rem rgba(227,6,19,.15);}
+.form-select:focus,.form-range:focus{border-color:var(--cdc-red);box-shadow:0 0 0 .25rem rgba(227,6,19,.15);}
+.form-range::-webkit-slider-thumb{background:var(--cdc-red);}
+.form-range::-moz-range-thumb{background:var(--cdc-red);}
+
+.nav-tabs .nav-link{color:var(--cdc-gray);border:1px solid transparent;}
+.nav-tabs .nav-link.active{color:var(--cdc-red-dark);border-color:var(--cdc-gray-light) var(--cdc-gray-light) #fff;font-weight:700;}
+
+.dropzone{border:2px dashed var(--cdc-gray-light);border-radius:12px;background:var(--cdc-white);padding:36px 20px;text-align:center;color:var(--cdc-gray);cursor:pointer;transition:border-color .15s, background .15s;}
+.dropzone.is-dragover{border-color:var(--cdc-red);background:var(--cdc-red-light);}
+.dropzone strong{color:var(--cdc-red);}
+
+.queue-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px;margin-top:4px;}
+.queue-item{background:var(--cdc-white);border:1px solid var(--cdc-gray-extra-light);border-radius:10px;padding:8px;cursor:pointer;position:relative;}
+.queue-item.is-active{outline:2px solid var(--cdc-red);}
+.queue-item img{width:100%;height:74px;object-fit:cover;border-radius:6px;display:block;}
+.queue-item .fname{font-size:11px;line-height:16.5px;color:var(--cdc-gray);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:4px;}
+.queue-item .badges{position:absolute;top:6px;right:6px;display:flex;gap:3px;}
+.queue-item .badge-fmt{font-size:10px;background:var(--cdc-gray-dark);color:#fff;border-radius:4px;padding:1px 4px;}
+.queue-item .remove-btn{position:absolute;top:4px;left:4px;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:50%;width:20px;height:20px;line-height:1;font-size:.75rem;}
+
+.cropper-wrapper{max-height:520px;background:#111;border-radius:8px;overflow:hidden;}
+.cropper-wrapper img{display:block;max-width:100%;}
+
+.quality-wrap.is-disabled{opacity:.45;pointer-events:none;}
+
+footer.cdc-footer{color:var(--cdc-gray);font-size:14px;}
+</style>
+</head>
+<body>
+
+<header class="cdc-header">
+  <div class="container">
+    <div class="cdc-logo-placeholder">
+      <span class="mark">CDC</span>
+      <span>
+        CDC Habitat
+        <div class="cdc-logo-note">Logo provisoire — voir commentaire CSS pour l'asset officiel</div>
+      </span>
+    </div>
+    <span class="cdc-eyebrow">Outils internes · Médiathèque</span>
+  </div>
+</header>
+
+<main class="container">
+  <div class="grid-row grid-row--gutters">
+
+    <div class="col-12">
+      <p class="cdc-eyebrow mb-1">Traitement d'images</p>
+      <h1 class="cdc-title-1 mb-1">Outil de recadrage de visuels</h1>
+      <p class="helper-text mb-0">Recadrez un ou plusieurs visuels aux formats standards du site, puis exportez-les en JPG ou PNG.</p>
+    </div>
+
+    <div class="col-12">
+      <div class="cdc-card p-4">
+        <div class="grid-row grid-row--gutters">
+
+          <div class="col-12 col-md-4">
+            <fieldset>
+              <legend class="cdc-title-2 mb-2">Formats de sortie</legend>
+              <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" id="fmtLarge" checked>
+                <label class="form-check-label" for="fmtLarge">1000 × 583 px <span class="helper-text d-block">Grand format (ratio 16:9,3)</span></label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="fmtSmall" checked>
+                <label class="form-check-label" for="fmtSmall">646 × 323 px <span class="helper-text d-block">Petit format (ratio 2:1)</span></label>
+              </div>
+            </fieldset>
+          </div>
+
+          <div class="col-12 col-md-4">
+            <label class="cdc-title-2 d-block mb-2">Format d'export</label>
+            <select id="exportType" class="form-select mb-1">
+              <option value="jpeg" selected>JPG</option>
+              <option value="png">PNG</option>
+            </select>
+            <p class="helper-text mb-0">Le WebP n'est pas proposé en sortie.</p>
+          </div>
+
+          <div class="col-12 col-md-4 quality-wrap" id="qualityWrap">
+            <label class="cdc-title-2 d-block mb-2" for="qualityRange">Qualité d'export : <span id="qualityLabel">75%</span></label>
+            <input type="range" class="form-range" id="qualityRange" min="25" max="100" step="25" value="75">
+            <p class="helper-text mb-0" id="qualityHint">S'applique au JPG (le PNG est sans perte).</p>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12">
+      <div class="dropzone" id="dropzone">
+        <strong>Glissez-déposez vos images ici</strong><br>
+        ou cliquez pour parcourir vos fichiers — traitement par lots pris en charge (JPG, PNG, WebP en entrée)
+        <input type="file" id="fileInput" accept="image/png,image/jpeg,image/webp" multiple hidden>
+      </div>
+    </div>
+
+    <div class="col-12" id="queueSection" hidden>
+      <h2 class="cdc-title-3 mb-2">Images à traiter (<span id="queueCount">0</span>)</h2>
+      <div class="queue-grid" id="queue"></div>
+    </div>
+
+    <div class="col-12" id="editorSection" hidden>
+      <div class="cdc-card p-3">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+          <ul class="nav nav-tabs" id="formatTabs"></ul>
+          <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-secondary" id="btnPrev">‹ Image précédente</button>
+            <button class="btn btn-sm btn-outline-secondary" id="btnNext">Image suivante ›</button>
+          </div>
+        </div>
+        <div class="cropper-wrapper">
+          <img id="cropperImage" src="" alt="Image en cours de recadrage">
+        </div>
+        <p class="helper-text mt-2 mb-0">Molette de souris = zoom sur l'image · Poignées d'angle = redimensionner le cadre de sélection · Le cadre respecte automatiquement le ratio du format sélectionné.</p>
+      </div>
+    </div>
+
+    <div class="col-12 d-flex flex-wrap gap-2">
+      <button class="btn cdc-btn-primary" id="btnExportAll" disabled>Exporter les images</button>
+      <button class="btn btn-outline-secondary" id="btnReset">Réinitialiser</button>
+      <span class="helper-text align-self-center ms-2" id="exportStatus"></span>
+    </div>
+
+  </div>
+
+  <footer class="cdc-footer mt-5 pt-3 border-top">
+    Outil interne — recadrage de visuels · formats 1000×583 et 646×323
+  </footer>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+<script>
+(function(){
+  "use strict";
+
+  const FORMATS = {
+    large: { key:'large', label:'1000 × 583', width:1000, height:583, ratio:1000/583 },
+    small: { key:'small', label:'646 × 323',  width:646,  height:323, ratio:646/323 }
+  };
+
+  const state = { images: [], currentIndex: -1, currentFormat: 'large', cropper: null };
+  let uid = 0;
+
+  const dropzone   = document.getElementById('dropzone');
+  const fileInput  = document.getElementById('fileInput');
+  const queueSection = document.getElementById('queueSection');
+  const queueEl    = document.getElementById('queue');
+  const queueCount = document.getElementById('queueCount');
+  const editorSection = document.getElementById('editorSection');
+  const formatTabs = document.getElementById('formatTabs');
+  const cropperImage = document.getElementById('cropperImage');
+  const btnPrev = document.getElementById('btnPrev');
+  const btnNext = document.getElementById('btnNext');
+  const fmtLarge = document.getElementById('fmtLarge');
+  const fmtSmall = document.getElementById('fmtSmall');
+  const exportType = document.getElementById('exportType');
+  const qualityRange = document.getElementById('qualityRange');
+  const qualityLabel = document.getElementById('qualityLabel');
+  const qualityWrap = document.getElementById('qualityWrap');
+  const btnExportAll = document.getElementById('btnExportAll');
+  const btnReset = document.getElementById('btnReset');
+  const exportStatus = document.getElementById('exportStatus');
+
+  function activeFormats(){
+    const list = [];
+    if (fmtLarge.checked) list.push(FORMATS.large);
+    if (fmtSmall.checked) list.push(FORMATS.small);
+    return list;
+  }
+
+  function updateQualityUI(){
+    qualityLabel.textContent = qualityRange.value + '%';
+    const isPng = exportType.value === 'png';
+    qualityWrap.classList.toggle('is-disabled', isPng);
+    document.getElementById('qualityHint').textContent = isPng
+      ? 'Sans effet en PNG (compression sans perte).'
+      : "S'applique au JPG (le PNG est sans perte).";
+  }
+  exportType.addEventListener('change', updateQualityUI);
+  qualityRange.addEventListener('input', updateQualityUI);
+  updateQualityUI();
+
+  function loadFiles(fileList){
+    const files = Array.from(fileList).filter(f => /^image\/(png|jpeg|webp)$/.test(f.type));
+    if (!files.length) return;
+    files.forEach(file => {
+      const objectUrl = URL.createObjectURL(file);
+      const imgEl = new Image();
+      imgEl.onload = () => renderQueue();
+      imgEl.src = objectUrl;
+      state.images.push({ id: ++uid, file, name: file.name.replace(/\.[^.]+$/, ''), objectUrl, imgEl, crops: {} });
+    });
+    renderQueue();
+    if (state.currentIndex === -1 && state.images.length) openEditor(0);
+    updateExportButton();
+  }
+
+  dropzone.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', e => loadFiles(e.target.files));
+  ['dragenter','dragover'].forEach(evt => dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.add('is-dragover'); }));
+  ['dragleave','drop'].forEach(evt => dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.remove('is-dragover'); }));
+  dropzone.addEventListener('drop', e => loadFiles(e.dataTransfer.files));
+
+  function renderQueue(){
+    queueSection.hidden = state.images.length === 0;
+    queueCount.textContent = state.images.length;
+    queueEl.innerHTML = '';
+    state.images.forEach((img, idx) => {
+      const badges = Object.keys(img.crops).map(k => `<span class="badge-fmt">${FORMATS[k].label.split(' ')[0]}</span>`).join('');
+      const el = document.createElement('div');
+      el.className = 'queue-item ' + (idx===state.currentIndex?'is-active':'');
+      el.dataset.idx = idx;
+      el.innerHTML = `
+        <button type="button" class="remove-btn" data-remove="${idx}" title="Retirer">×</button>
+        <div class="badges">${badges}</div>
+        <img src="${img.objectUrl}" alt="${img.name}">
+        <div class="fname">${img.name}</div>`;
+      queueEl.appendChild(el);
+    });
+    queueEl.querySelectorAll('.queue-item').forEach(el => {
+      el.addEventListener('click', e => { if (e.target.dataset.remove !== undefined) return; openEditor(parseInt(el.dataset.idx,10)); });
+    });
+    queueEl.querySelectorAll('[data-remove]').forEach(btn => {
+      btn.addEventListener('click', e => { e.stopPropagation(); removeImage(parseInt(btn.dataset.remove,10)); });
+    });
+  }
+
+  function removeImage(idx){
+    URL.revokeObjectURL(state.images[idx].objectUrl);
+    state.images.splice(idx,1);
+    if (state.currentIndex >= state.images.length) state.currentIndex = state.images.length - 1;
+    if (state.images.length === 0){ destroyCropper(); editorSection.hidden = true; state.currentIndex = -1; }
+    else { openEditor(state.currentIndex); }
+    renderQueue();
+    updateExportButton();
+  }
+
+  btnReset.addEventListener('click', () => {
+    state.images.forEach(i => URL.revokeObjectURL(i.objectUrl));
+    state.images = [];
+    state.currentIndex = -1;
+    destroyCropper();
+    editorSection.hidden = true;
+    renderQueue();
+    updateExportButton();
+    exportStatus.textContent = '';
+  });
+
+  function defaultRect(imgEl, ratio){
+    const iw = imgEl.naturalWidth, ih = imgEl.naturalHeight;
+    const imgRatio = iw/ih;
+    let w, h;
+    if (imgRatio > ratio){ h = ih; w = h*ratio; } else { w = iw; h = w/ratio; }
+    return { x:(iw-w)/2, y:(ih-h)/2, width:w, height:h };
+  }
+
+  function destroyCropper(){ if (state.cropper){ state.cropper.destroy(); state.cropper = null; } }
+
+  function renderFormatTabs(){
+    const fmts = activeFormats();
+    formatTabs.innerHTML = fmts.map(f => `
+      <li class="nav-item">
+        <button type="button" class="nav-link ${f.key===state.currentFormat?'active':''}" data-fmt="${f.key}">${f.label}</button>
+      </li>`).join('');
+    formatTabs.querySelectorAll('[data-fmt]').forEach(btn => btn.addEventListener('click', () => switchFormat(btn.dataset.fmt)));
+  }
+
+  function captureCurrentCrop(){
+    if (!state.cropper || state.currentIndex === -1) return;
+    const data = state.cropper.getData(true);
+    state.images[state.currentIndex].crops[state.currentFormat] = { x:data.x, y:data.y, width:data.width, height:data.height };
+  }
+
+  function openEditor(idx){
+    if (idx < 0 || idx >= state.images.length) return;
+    captureCurrentCrop();
+    state.currentIndex = idx;
+    const fmts = activeFormats();
+    if (!fmts.find(f => f.key === state.currentFormat)) state.currentFormat = fmts.length ? fmts[0].key : 'large';
+    editorSection.hidden = fmts.length === 0;
+    if (!fmts.length){ renderQueue(); return; }
+    renderFormatTabs();
+    loadCropperFor(idx, state.currentFormat);
+    renderQueue();
+  }
+
+  function switchFormat(fmtKey){
+    captureCurrentCrop();
+    state.currentFormat = fmtKey;
+    renderFormatTabs();
+    loadCropperFor(state.currentIndex, fmtKey);
+  }
+
+  function loadCropperFor(idx, fmtKey){
+    destroyCropper();
+    const record = state.images[idx];
+    const fmt = FORMATS[fmtKey];
+    cropperImage.src = record.objectUrl;
+    const initCropper = () => {
+      state.cropper = new Cropper(cropperImage, {
+        aspectRatio: fmt.ratio, viewMode: 1, dragMode: 'move', autoCropArea: 1,
+        zoomOnWheel: true, cropBoxResizable: true, cropBoxMovable: true, background: false, responsive: true,
+        ready(){
+          const saved = record.crops[fmtKey];
+          if (saved) this.cropper.setData(saved);
+          else this.cropper.setData(defaultRect(record.imgEl, fmt.ratio));
+        }
+      });
+    };
+    if (cropperImage.complete) initCropper(); else cropperImage.onload = initCropper;
+  }
+
+  btnPrev.addEventListener('click', () => openEditor(state.currentIndex - 1));
+  btnNext.addEventListener('click', () => openEditor(state.currentIndex + 1));
+  [fmtLarge, fmtSmall].forEach(cb => cb.addEventListener('change', () => { updateExportButton(); if (state.currentIndex !== -1) openEditor(state.currentIndex); }));
+
+  function updateExportButton(){ btnExportAll.disabled = state.images.length === 0 || activeFormats().length === 0; }
+
+  function rectFor(record, fmt){ captureCurrentCrop(); return record.crops[fmt.key] || defaultRect(record.imgEl, fmt.ratio); }
+  function canvasToBlob(canvas, mime, quality){ return new Promise(resolve => canvas.toBlob(resolve, mime, quality)); }
+
+  async function exportImage(record, fmt, mime, quality){
+    const rect = rectFor(record, fmt);
+    const canvas = document.createElement('canvas');
+    canvas.width = fmt.width; canvas.height = fmt.height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(record.imgEl, rect.x, rect.y, rect.width, rect.height, 0, 0, fmt.width, fmt.height);
+    const blob = await canvasToBlob(canvas, mime, quality);
+    const ext = mime === 'image/png' ? 'png' : 'jpg';
+    return { blob, filename: `${record.name}-${fmt.width}x${fmt.height}.${ext}` };
+  }
+
+  function downloadBlob(blob, filename){
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+  }
+
+  btnExportAll.addEventListener('click', async () => {
+    captureCurrentCrop();
+    const fmts = activeFormats();
+    if (!state.images.length || !fmts.length) return;
+    const mime = exportType.value === 'png' ? 'image/png' : 'image/jpeg';
+    const quality = parseInt(qualityRange.value,10) / 100;
+    btnExportAll.disabled = true;
+    exportStatus.textContent = 'Export en cours…';
+    const results = [];
+    for (const record of state.images){ for (const fmt of fmts){ results.push(await exportImage(record, fmt, mime, quality)); } }
+    if (results.length === 1){ downloadBlob(results[0].blob, results[0].filename); }
+    else {
+      const zip = new JSZip();
+      results.forEach(r => zip.file(r.filename, r.blob));
+      const zipBlob = await zip.generateAsync({ type:'blob' });
+      downloadBlob(zipBlob, 'visuels-recadres.zip');
+    }
+    exportStatus.textContent = `${results.length} fichier(s) exporté(s).`;
+    btnExportAll.disabled = false;
+  });
+
+})();
+</script>
+</body>
+</html>

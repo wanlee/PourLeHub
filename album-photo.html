@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Outil de recadrage — Album photo — CDC Habitat</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anek+Latin:wght@400;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+<link rel="stylesheet" href="https://cdn.cdc-habitat.fr/design-system/versions/latest/styles/design-system.css">
+
+<style>
+/* Jetons de design CDC Habitat — voir le fichier outil-recadrage-visuels.html
+   pour le détail des sources (page Colors / Typography du design system).
+   Seul le logo reste à substituer manuellement (voir <header> plus bas). */
+:root{
+  --cdc-red:#E30613;
+  --cdc-red-dark:#B91818;
+  --cdc-red-light:#FCE1D7;
+  --cdc-info-bg:#E4F3FD;
+  --cdc-error-bg:#FCE1D7;
+  --cdc-success-bg:#E7F1E2;
+  --cdc-warning-bg:#FFF2CD;
+  --cdc-gray-dark:#4C4C4B;
+  --cdc-gray:#828485;
+  --cdc-gray-light:#D6D8D9;
+  --cdc-gray-extra-light:#ECECEC;
+  --cdc-white:#FFFFFF;
+  --cdc-font:'Anek Latin','Segoe UI',Arial,sans-serif;
+}
+
+html,body{background:var(--cdc-gray-extra-light);color:var(--cdc-gray-dark);font-family:var(--cdc-font);font-size:16px;line-height:24px;}
+h1,h2,h3,h4,legend{font-family:var(--cdc-font);color:var(--cdc-gray-dark);margin:0;}
+.cdc-title-1{font-weight:700;font-size:36px;line-height:45px;}
+.cdc-title-2{font-weight:400;font-size:22px;line-height:27.5px;}
+.cdc-title-3{font-weight:400;font-size:14px;line-height:17.5px;}
+.helper-text{font-size:14px;line-height:21px;color:var(--cdc-gray);}
+.cdc-eyebrow{text-transform:uppercase;letter-spacing:.08em;font-size:11px;line-height:16.5px;font-weight:700;color:var(--cdc-red);}
+
+.container{padding-top:24px;padding-bottom:24px;}
+
+.cdc-header{background:var(--cdc-white);border-bottom:1px solid var(--cdc-gray-extra-light);}
+.cdc-header .container{display:flex;align-items:center;justify-content:space-between;min-height:88px;padding-top:0;padding-bottom:0;}
+
+.cdc-logo-placeholder{display:flex;align-items:center;gap:10px;font-weight:700;font-size:1.15rem;color:var(--cdc-red);}
+.cdc-logo-placeholder .mark{width:36px;height:36px;border-radius:6px;background:var(--cdc-red);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;}
+.cdc-logo-note{font-size:.7rem;color:var(--cdc-gray);font-weight:400;}
+
+.cdc-card{background:var(--cdc-white);border:1px solid var(--cdc-gray-extra-light);border-radius:12px;}
+.cdc-btn-primary{background:var(--cdc-red);border-color:var(--cdc-red);color:#fff;}
+.cdc-btn-primary:hover{background:var(--cdc-red-dark);border-color:var(--cdc-red-dark);color:#fff;}
+.cdc-btn-primary:disabled{opacity:.5;}
+.btn-outline-secondary{color:var(--cdc-gray-dark);border-color:var(--cdc-gray-light);}
+.btn-outline-secondary:hover{background:var(--cdc-gray-extra-light);color:var(--cdc-gray-dark);border-color:var(--cdc-gray-light);}
+
+.form-check-input:checked{background-color:var(--cdc-red);border-color:var(--cdc-red);}
+.form-select:focus,.form-range:focus,.form-control:focus{border-color:var(--cdc-red);box-shadow:0 0 0 .25rem rgba(227,6,19,.15);}
+.form-range::-webkit-slider-thumb{background:var(--cdc-red);}
+.form-range::-moz-range-thumb{background:var(--cdc-red);}
+
+.dropzone{border:2px dashed var(--cdc-gray-light);border-radius:12px;background:var(--cdc-white);padding:36px 20px;text-align:center;color:var(--cdc-gray);cursor:pointer;transition:border-color .15s, background .15s;}
+.dropzone.is-dragover{border-color:var(--cdc-red);background:var(--cdc-red-light);}
+.dropzone strong{color:var(--cdc-red);}
+
+.queue-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px;margin-top:4px;}
+.queue-item{background:var(--cdc-white);border:1px solid var(--cdc-gray-extra-light);border-radius:10px;padding:8px;cursor:pointer;position:relative;}
+.queue-item.is-active{outline:2px solid var(--cdc-red);}
+.queue-item img{width:100%;height:74px;object-fit:cover;border-radius:6px;display:block;}
+.queue-item .fname{font-size:11px;line-height:16.5px;color:var(--cdc-gray);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:4px;}
+.queue-item .badges{position:absolute;top:6px;right:6px;}
+.queue-item .badge-fmt{font-size:10px;background:var(--cdc-gray-dark);color:#fff;border-radius:4px;padding:1px 4px;}
+.queue-item .remove-btn{position:absolute;top:4px;left:4px;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:50%;width:20px;height:20px;line-height:1;font-size:.75rem;}
+
+.cropper-wrapper{max-height:520px;background:#111;border-radius:8px;overflow:hidden;}
+.cropper-wrapper img{display:block;max-width:100%;}
+.quality-wrap.is-disabled{opacity:.45;pointer-events:none;}
+.rename-preview{font-family:monospace;background:var(--cdc-gray-extra-light);border-radius:6px;padding:4px 8px;display:inline-block;}
+footer.cdc-footer{color:var(--cdc-gray);font-size:14px;}
+</style>
+</head>
+<body>
+
+<header class="cdc-header">
+  <div class="container">
+    <div class="cdc-logo-placeholder">
+      <span class="mark">CDC</span>
+      <span>
+        CDC Habitat
+        <div class="cdc-logo-note">Logo provisoire — voir commentaire CSS pour l'asset officiel</div>
+      </span>
+    </div>
+    <span class="cdc-eyebrow">Outils internes · Médiathèque</span>
+  </div>
+</header>
+
+<main class="container">
+  <div class="grid-row grid-row--gutters">
+
+    <div class="col-12">
+      <p class="cdc-eyebrow mb-1">Traitement d'images</p>
+      <h1 class="cdc-title-1 mb-1">Recadrage par lot — Album photo</h1>
+      <p class="helper-text mb-0">Recadrez, renommez et compressez une série de photos avant de les déposer dans un album, puis récupérez le tout dans une archive ZIP.</p>
+    </div>
+
+    <div class="col-12">
+      <div class="cdc-card p-4">
+        <div class="grid-row grid-row--gutters">
+
+          <div class="col-12 col-md-3">
+            <label class="cdc-title-2 d-block mb-2">Format d'export</label>
+            <select id="exportType" class="form-select mb-1">
+              <option value="jpeg" selected>JPEG</option>
+              <option value="png">PNG</option>
+            </select>
+            <p class="helper-text mb-0">Le WebP n'est pas proposé en sortie.</p>
+          </div>
+
+          <div class="col-12 col-md-3 quality-wrap" id="qualityWrap">
+            <label class="cdc-title-2 d-block mb-2" for="qualityRange">Qualité cible : <span id="qualityLabel">75%</span></label>
+            <input type="range" class="form-range" id="qualityRange" min="25" max="100" step="25" value="75">
+            <p class="helper-text mb-0">Réduite automatiquement si besoin pour respecter 500 Ko max.</p>
+          </div>
+
+          <div class="col-12 col-md-3">
+            <label class="cdc-title-2 d-block mb-2" for="prefixInput">Préfixe de renommage</label>
+            <input type="text" class="form-control" id="prefixInput" placeholder="ex : album-residence" value="photo">
+            <p class="helper-text mb-0 mt-1">Aperçu : <span class="rename-preview" id="renamePreview">photo-001.jpg</span></p>
+          </div>
+
+          <div class="col-12 col-md-3">
+            <label class="cdc-title-2 d-block mb-2">Contraintes de sortie</label>
+            <p class="helper-text mb-0">
+              Dimensions max : 800 × 600 px (paysage) ou 600 × 800 px (portrait).<br>
+              Poids max par visuel : 500 Ko.
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12">
+      <div class="dropzone" id="dropzone">
+        <strong>Glissez-déposez vos photos ou une archive .zip</strong><br>
+        ou cliquez pour parcourir — images (JPG/PNG/WebP) ou fichier .zip contenant vos photos
+        <input type="file" id="fileInput" accept="image/png,image/jpeg,image/webp,.zip,.7z,.gz,.tar.gz" multiple hidden>
+      </div>
+      <p class="helper-text mt-2 mb-0" id="archiveHint">
+        Les archives <strong>.zip</strong> sont extraites directement dans votre navigateur.
+        Les formats <strong>.7z</strong> et <strong>.tar.gz</strong> sont expérimentaux : si l'extraction échoue,
+        un message vous invitera à déposer un .zip ou les images individuellement à la place.
+      </p>
+    </div>
+
+    <div class="col-12" id="queueSection" hidden>
+      <h2 class="cdc-title-3 mb-2">Photos à traiter (<span id="queueCount">0</span>)</h2>
+      <div class="queue-grid" id="queue"></div>
+    </div>
+
+    <div class="col-12" id="editorSection" hidden>
+      <div class="cdc-card p-3">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+          <span class="helper-text mb-0">Recadrage libre — le ratio n'est pas imposé</span>
+          <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-secondary" id="btnPrev">‹ Photo précédente</button>
+            <button class="btn btn-sm btn-outline-secondary" id="btnNext">Photo suivante ›</button>
+          </div>
+        </div>
+        <div class="cropper-wrapper">
+          <img id="cropperImage" src="" alt="Photo en cours de recadrage">
+        </div>
+        <p class="helper-text mt-2 mb-0">Molette de souris = zoom sur l'image · Poignées d'angle = redimensionner le cadre de sélection.</p>
+      </div>
+    </div>
+
+    <div class="col-12 d-flex flex-wrap gap-2">
+      <button class="btn cdc-btn-primary" id="btnExportAll" disabled>Exporter l'album (.zip)</button>
+      <button class="btn btn-outline-secondary" id="btnReset">Réinitialiser</button>
+      <span class="helper-text align-self-center ms-2" id="exportStatus"></span>
+    </div>
+
+  </div>
+
+  <footer class="cdc-footer mt-5 pt-3 border-top">
+    Outil interne — recadrage par lot pour album photo · sortie max 800×600 · 500 Ko/visuel
+  </footer>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+<script>
+(function(){
+  "use strict";
+
+  const MAX_LANDSCAPE = { w:800, h:600 };
+  const MAX_PORTRAIT  = { w:600, h:800 };
+  const MAX_BYTES = 500 * 1024;
+
+  const state = { images: [], currentIndex: -1, cropper: null };
+  let uid = 0;
+
+  const dropzone = document.getElementById('dropzone');
+  const fileInput = document.getElementById('fileInput');
+  const queueSection = document.getElementById('queueSection');
+  const queueEl = document.getElementById('queue');
+  const queueCount = document.getElementById('queueCount');
+  const editorSection = document.getElementById('editorSection');
+  const cropperImage = document.getElementById('cropperImage');
+  const btnPrev = document.getElementById('btnPrev');
+  const btnNext = document.getElementById('btnNext');
+  const exportType = document.getElementById('exportType');
+  const qualityRange = document.getElementById('qualityRange');
+  const qualityLabel = document.getElementById('qualityLabel');
+  const qualityWrap = document.getElementById('qualityWrap');
+  const prefixInput = document.getElementById('prefixInput');
+  const renamePreview = document.getElementById('renamePreview');
+  const btnExportAll = document.getElementById('btnExportAll');
+  const btnReset = document.getElementById('btnReset');
+  const exportStatus = document.getElementById('exportStatus');
+
+  function currentExt(){ return exportType.value === 'png' ? 'png' : 'jpg'; }
+  function pad(n){ return String(n).padStart(3,'0'); }
+
+  function updateRenamePreview(){
+    const prefix = (prefixInput.value || 'photo').trim().replace(/[^a-z0-9\-_]+/gi,'-');
+    renamePreview.textContent = `${prefix}-001.${currentExt()}`;
+  }
+  prefixInput.addEventListener('input', updateRenamePreview);
+  exportType.addEventListener('change', () => { updateQualityUI(); updateRenamePreview(); });
+  updateRenamePreview();
+
+  function updateQualityUI(){
+    qualityLabel.textContent = qualityRange.value + '%';
+    qualityWrap.classList.toggle('is-disabled', exportType.value === 'png');
+  }
+  qualityRange.addEventListener('input', updateQualityUI);
+  updateQualityUI();
+
+  function addImageFile(file){
+    const objectUrl = URL.createObjectURL(file);
+    const imgEl = new Image();
+    imgEl.onload = () => renderQueue();
+    imgEl.src = objectUrl;
+    state.images.push({ id: ++uid, file, name: file.name.replace(/\.[^.]+$/, ''), objectUrl, imgEl, crop: null });
+  }
+
+  async function handleZip(file){
+    const zip = await JSZip.loadAsync(file);
+    const entries = Object.values(zip.files).filter(e => !e.dir && /\.(png|jpe?g|webp)$/i.test(e.name));
+    for (const entry of entries){
+      const blob = await entry.async('blob');
+      const ext = entry.name.split('.').pop().toLowerCase();
+      const mime = ext === 'png' ? 'image/png' : (ext === 'webp' ? 'image/webp' : 'image/jpeg');
+      const typedBlob = blob.type ? blob : blob.slice(0, blob.size, mime);
+      addImageFile(new File([typedBlob], entry.name.split('/').pop(), { type: mime }));
+    }
+    renderQueue();
+  }
+
+  async function handleOtherArchive(file){
+    try {
+      if (!window.Archive){
+        await new Promise((resolve, reject) => {
+          const s = document.createElement('script');
+          s.src = 'https://cdn.jsdelivr.net/npm/libarchive.js@2.0.2/dist/libarchive.js';
+          s.onload = resolve; s.onerror = reject;
+          document.head.appendChild(s);
+        });
+        window.Archive.init({ workerUrl: 'https://cdn.jsdelivr.net/npm/libarchive.js@2.0.2/dist/worker-bundle.js' });
+      }
+      const archive = await window.Archive.open(file);
+      const filesObj = await archive.extractFiles();
+      const walk = async (obj) => {
+        for (const [name, entry] of Object.entries(obj)){
+          if (entry instanceof File){ if (/\.(png|jpe?g|webp)$/i.test(name)) addImageFile(entry); }
+          else if (typeof entry === 'object'){ await walk(entry); }
+        }
+      };
+      await walk(filesObj);
+      renderQueue();
+    } catch (err){
+      alert("L'extraction de ce format d'archive (7z / tar.gz) a échoué dans le navigateur.\nMerci de déposer un fichier .zip ou vos images individuellement.");
+    }
+  }
+
+  async function loadFiles(fileList){
+    const files = Array.from(fileList);
+    for (const file of files){
+      if (/^image\/(png|jpeg|webp)$/.test(file.type)) addImageFile(file);
+      else if (/\.zip$/i.test(file.name)) await handleZip(file);
+      else if (/\.(7z|gz|tar\.gz)$/i.test(file.name)) await handleOtherArchive(file);
+    }
+    renderQueue();
+    if (state.currentIndex === -1 && state.images.length) openEditor(0);
+    updateExportButton();
+  }
+
+  dropzone.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', e => loadFiles(e.target.files));
+  ['dragenter','dragover'].forEach(evt => dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.add('is-dragover'); }));
+  ['dragleave','drop'].forEach(evt => dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.remove('is-dragover'); }));
+  dropzone.addEventListener('drop', e => loadFiles(e.dataTransfer.files));
+
+  function renderQueue(){
+    queueSection.hidden = state.images.length === 0;
+    queueCount.textContent = state.images.length;
+    queueEl.innerHTML = '';
+    state.images.forEach((img, idx) => {
+      const el = document.createElement('div');
+      el.className = 'queue-item ' + (idx===state.currentIndex?'is-active':'');
+      el.dataset.idx = idx;
+      el.innerHTML = `
+        <button type="button" class="remove-btn" data-remove="${idx}" title="Retirer">×</button>
+        <div class="badges">${img.crop ? '<span class="badge-fmt">recadré</span>' : ''}</div>
+        <img src="${img.objectUrl}" alt="${img.name}">
+        <div class="fname">${img.name}</div>`;
+      queueEl.appendChild(el);
+    });
+    queueEl.querySelectorAll('.queue-item').forEach(el => {
+      el.addEventListener('click', e => { if (e.target.dataset.remove !== undefined) return; openEditor(parseInt(el.dataset.idx,10)); });
+    });
+    queueEl.querySelectorAll('[data-remove]').forEach(btn => {
+      btn.addEventListener('click', e => { e.stopPropagation(); removeImage(parseInt(btn.dataset.remove,10)); });
+    });
+    updateExportButton();
+  }
+
+  function removeImage(idx){
+    URL.revokeObjectURL(state.images[idx].objectUrl);
+    state.images.splice(idx,1);
+    if (state.currentIndex >= state.images.length) state.currentIndex = state.images.length - 1;
+    if (state.images.length === 0){ destroyCropper(); editorSection.hidden = true; state.currentIndex = -1; }
+    else { openEditor(state.currentIndex); }
+    renderQueue();
+  }
+
+  btnReset.addEventListener('click', () => {
+    state.images.forEach(i => URL.revokeObjectURL(i.objectUrl));
+    state.images = [];
+    state.currentIndex = -1;
+    destroyCropper();
+    editorSection.hidden = true;
+    renderQueue();
+    exportStatus.textContent = '';
+  });
+
+  function defaultRect(imgEl){ return { x:0, y:0, width:imgEl.naturalWidth, height:imgEl.naturalHeight }; }
+  function destroyCropper(){ if (state.cropper){ state.cropper.destroy(); state.cropper = null; } }
+
+  function captureCurrentCrop(){
+    if (!state.cropper || state.currentIndex === -1) return;
+    const data = state.cropper.getData(true);
+    state.images[state.currentIndex].crop = { x:data.x, y:data.y, width:data.width, height:data.height };
+  }
+
+  function openEditor(idx){
+    if (idx < 0 || idx >= state.images.length) return;
+    captureCurrentCrop();
+    state.currentIndex = idx;
+    editorSection.hidden = false;
+    loadCropperFor(idx);
+    renderQueue();
+  }
+
+  function loadCropperFor(idx){
+    destroyCropper();
+    const record = state.images[idx];
+    cropperImage.src = record.objectUrl;
+    const init = () => {
+      state.cropper = new Cropper(cropperImage, {
+        aspectRatio: NaN, viewMode: 1, dragMode: 'move', autoCropArea: 1,
+        zoomOnWheel: true, cropBoxResizable: true, cropBoxMovable: true, background: false, responsive: true,
+        ready(){ this.cropper.setData(record.crop || defaultRect(record.imgEl)); }
+      });
+    };
+    if (cropperImage.complete) init(); else cropperImage.onload = init;
+  }
+
+  btnPrev.addEventListener('click', () => openEditor(state.currentIndex - 1));
+  btnNext.addEventListener('click', () => openEditor(state.currentIndex + 1));
+
+  function updateExportButton(){ btnExportAll.disabled = state.images.length === 0; }
+
+  function canvasToBlob(canvas, mime, quality){ return new Promise(resolve => canvas.toBlob(resolve, mime, quality)); }
+
+  function targetSize(rectW, rectH){
+    const landscape = rectW >= rectH;
+    const box = landscape ? MAX_LANDSCAPE : MAX_PORTRAIT;
+    const scale = Math.min(1, box.w / rectW, box.h / rectH);
+    return { width: Math.round(rectW * scale), height: Math.round(rectH * scale) };
+  }
+
+  async function encodeWithinWeight(canvas, mime, startQuality){
+    if (mime === 'image/png'){
+      let blob = await canvasToBlob(canvas, mime);
+      let scale = 1, work = canvas;
+      while (blob.size > MAX_BYTES && scale > 0.3){
+        scale -= 0.1;
+        const c2 = document.createElement('canvas');
+        c2.width = Math.round(canvas.width * scale); c2.height = Math.round(canvas.height * scale);
+        c2.getContext('2d').drawImage(canvas, 0, 0, c2.width, c2.height);
+        work = c2;
+        blob = await canvasToBlob(work, mime);
+      }
+      return blob;
+    }
+    let quality = startQuality;
+    let blob = await canvasToBlob(canvas, mime, quality);
+    while (blob.size > MAX_BYTES && quality > 0.25){ quality -= 0.25; blob = await canvasToBlob(canvas, mime, quality); }
+    let scale = 1, work = canvas;
+    while (blob.size > MAX_BYTES && scale > 0.3){
+      scale -= 0.1;
+      const c2 = document.createElement('canvas');
+      c2.width = Math.round(canvas.width * scale); c2.height = Math.round(canvas.height * scale);
+      c2.getContext('2d').drawImage(canvas, 0, 0, c2.width, c2.height);
+      work = c2;
+      blob = await canvasToBlob(work, mime, Math.max(quality,0.25));
+    }
+    return blob;
+  }
+
+  async function exportImage(record, mime, startQuality){
+    captureCurrentCrop();
+    const rect = record.crop || defaultRect(record.imgEl);
+    const size = targetSize(rect.width, rect.height);
+    const canvas = document.createElement('canvas');
+    canvas.width = size.width; canvas.height = size.height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(record.imgEl, rect.x, rect.y, rect.width, rect.height, 0, 0, size.width, size.height);
+    return await encodeWithinWeight(canvas, mime, startQuality);
+  }
+
+  btnExportAll.addEventListener('click', async () => {
+    if (!state.images.length) return;
+    captureCurrentCrop();
+    const mime = exportType.value === 'png' ? 'image/png' : 'image/jpeg';
+    const ext = currentExt();
+    const quality = parseInt(qualityRange.value,10) / 100;
+    const prefix = (prefixInput.value || 'photo').trim().replace(/[^a-z0-9\-_]+/gi,'-') || 'photo';
+
+    btnExportAll.disabled = true;
+    exportStatus.textContent = 'Traitement en cours…';
+
+    const zip = new JSZip();
+    let oversizeCount = 0;
+    for (let i = 0; i < state.images.length; i++){
+      const blob = await exportImage(state.images[i], mime, quality);
+      if (blob.size > MAX_BYTES) oversizeCount++;
+      zip.file(`${prefix}-${pad(i+1)}.${ext}`, blob);
+      exportStatus.textContent = `Traitement en cours… (${i+1}/${state.images.length})`;
+    }
+    const zipBlob = await zip.generateAsync({ type:'blob' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(zipBlob); a.download = `${prefix}-album.zip`;
+    document.body.appendChild(a); a.click(); a.remove();
+
+    exportStatus.textContent = oversizeCount
+      ? `${state.images.length} photo(s) exportée(s) — ${oversizeCount} dépassent encore 500 Ko malgré la compression maximale.`
+      : `${state.images.length} photo(s) exportée(s) dans l'archive ZIP, toutes ≤ 500 Ko.`;
+    btnExportAll.disabled = false;
+  });
+
+})();
+</script>
+</body>
+</html>
