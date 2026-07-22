@@ -87,7 +87,7 @@ footer.cdc-footer{color:var(--cdc-gray);font-size:14px;}
   <div class="container">
     <div class="cdc-logo-placeholder">
       <span class="mark">CDC</span>
-      <span>CDC Habitat<div class="cdc-logo-note">Logo provisoire — voir commentaire CSS pour l'asset officiel</div></span>
+      <span>CDC <div class="cdc-logo-note">Logo provisoire — voir commentaire CSS pour l'asset officiel</div></span>
     </div>
     <span class="cdc-eyebrow">Outils internes · Communication</span>
   </div>
@@ -109,7 +109,7 @@ footer.cdc-footer{color:var(--cdc-gray);font-size:14px;}
         <div class="grid-row grid-row--gutters">
           <div class="col-12 col-md-6">
             <label class="field-label" for="metaSubject">Objet de l'email</label>
-            <input type="text" class="form-control mb-3" id="metaSubject" placeholder="Ex : Les actualités CDC Habitat de juillet">
+            <input type="text" class="form-control mb-3" id="metaSubject" placeholder="Ex : Les actualités de la DSCG">
             <label class="field-label" for="metaPreheader">Texte d'aperçu (preheader)</label>
             <input type="text" class="form-control" id="metaPreheader" placeholder="Ex : Découvrez les nouveautés du mois">
             <p class="helper-text mt-1 mb-0">Ce texte s'affiche dans la liste des emails, juste après l'objet. Il est invisible dans le corps du message.</p>
@@ -118,7 +118,7 @@ footer.cdc-footer{color:var(--cdc-gray);font-size:14px;}
             <label class="field-label" for="metaLogoUrl">URL du logo (hébergé)</label>
             <input type="text" class="form-control mb-3" id="metaLogoUrl" placeholder="https://.../logo-cdc-habitat.png">
             <label class="field-label" for="metaFooterText">Mentions de pied de page</label>
-            <textarea class="form-control" id="metaFooterText" rows="2">CDC Habitat — Vous recevez cet email en tant que contact du groupe CDC Habitat.</textarea>
+            <textarea class="form-control" id="metaFooterText" rows="2">Vous recevez cet email en tant que collaborateur du groupe CDC Habitat.</textarea>
             <p class="helper-text mt-1 mb-0">Les images doivent être hébergées en ligne (médiathèque, CDN…) : les emails n'affichent pas les images encodées localement.</p>
           </div>
         </div>
@@ -175,7 +175,7 @@ footer.cdc-footer{color:var(--cdc-gray);font-size:14px;}
   const MAX_IMG_BYTES = 300 * 1024;
 
   const state = {
-    meta: { subject:'', preheader:'', logoUrl:'', footerText:'CDC Habitat — Vous recevez cet email en tant que contact du groupe CDC Habitat.' },
+    meta: { subject:'', preheader:'', logoUrl:'', footerText:'CDC Habitat — Vous recevez cet email en tant que collaborateur du groupe CDC Habitat.' },
     blocks: [],
     activeCropId: null,
     cropper: null
